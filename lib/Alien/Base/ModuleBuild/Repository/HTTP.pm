@@ -9,6 +9,7 @@ $VERSION = eval $VERSION;
 use Carp;
 
 use Class::Load qw( load_class );
+use File::Basename qw( basename );
 use HTTP::Tiny;
 use Scalar::Util qw( blessed );
 use URI;
@@ -43,15 +44,12 @@ sub connection {
 
 sub get_file {
   my $self = shift;
-  my $file = shift || croak "Must specify file to download";
+  my $url = shift || croak "Must specify url to download";
 
-  my $host = $self->{host};
-  my $from = $self->location;
-
-  my $url = 'http://' . $host . $from . '/' . $file;
+  my $file = basename( $url );
   my $res = $self->connection->mirror($url, $file);
   my ( $is_error, $content ) = $self->check_http_response( $res );
-  croak "Download failed: " . $content if $is_error;
+  croak "Download failed: " . $content . " ($url)" if $is_error;
 
   return 1;
 }
